@@ -10,4 +10,3 @@ int kget(int w);
 
 /* Write character to terminal */
 void vt52(int c);
-
