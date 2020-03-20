@@ -16,7 +16,7 @@ CC = gcc
 CFLAGS = -g -pipe -Wall -Wextra -pedantic -ansi \
 	 -D_POSIX_C_SOURCE=200809L -DPOSIX_TTY \
 	 -DENDIAN_LITTLE -DMEM_BREAK
-LDFLAGS = 
+LDFLAGS =
 
 FILES = README.md Makefile A-Hdrive B-Hdrive cpmws.png \
 	bdos.c bios.c cpm.c cpmdisc.h defs.h disassem.c main.c vt.c vt.h z80.c \
@@ -57,3 +57,6 @@ files:
 
 difflist:
 	@for f in $(FILES); do rcsdiff -q $$f >/dev/null || echo $$f; done
+
+format:
+	clang-format -i *.c && clang-format -i *.h
