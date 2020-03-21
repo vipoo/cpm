@@ -922,6 +922,13 @@ void check_BDOS_hook(z80info *z80) {
     B = H;
     A = L;
     break;
+  case 45:
+    if (trace_bdos)
+      printf("\nBDOS 45: F_ERRMODE\n DE=%02x", DE);
+    HL = 0;
+    B = H;
+    A = L;
+    break;
   default:
     printf("\n\nUnrecognized BDOS-Function:\n");
     printf("AF=%04x  BC=%04x  DE=%04x  HL=%04x  SP=%04x\nStack =", AF, BC, DE, HL, SP);
