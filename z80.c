@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hbios.h"
 
 int nobdos;
 int strace;
@@ -855,8 +856,11 @@ contsw:
     }
     break;
 
-  case 0xC7: /* rst 0 */
   case 0xCF: /* rst 8 */
+    hbiosCall(z80);
+    break;
+
+  case 0xC7: /* rst 0 */
   case 0xD7: /* rst 16 */
   case 0xDF: /* rst 24 */
   case 0xE7: /* rst 32 */

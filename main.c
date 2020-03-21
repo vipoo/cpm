@@ -782,6 +782,8 @@ boolean input(z80info *z80, byte haddr, byte laddr, byte *val) {
  |  output  --  output the data at the specified I/O address
 \*-----------------------------------------------------------------------*/
 
+long counter = 0;
+
 void output(z80info *z80, byte haddr, byte laddr, byte data) {
   if (laddr == 0xFF) {
     /* BIOS call - interrupt the z80 before the next instruction
@@ -807,7 +809,7 @@ void output(z80info *z80, byte haddr, byte laddr, byte data) {
       putc(data, logfile);
   } else {
     /* dump the data for our user */
-    printf("OUTPUT: addr = %02X%02X  DATA = %02X\r\n", haddr, laddr, data);
+    printf("OUTPUT: %ld: addr = %02X%02X  DATA = %02X\r\n", counter++, haddr, laddr, data);
   }
 }
 
