@@ -807,7 +807,7 @@ void output(z80info *z80, byte haddr, byte laddr, byte data) {
       putc(data, logfile);
   } else {
     /* dump the data for our user */
-    printf("OUTPUT: addr = %X%X  DATA = %X\r\n", haddr, laddr, data);
+    printf("OUTPUT: addr = %02X%02X  DATA = %02X\r\n", haddr, laddr, data);
   }
 }
 
