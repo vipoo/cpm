@@ -6,10 +6,10 @@
 \*-----------------------------------------------------------------------*/
 
 #include "defs.h"
+#include "hbios.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hbios.h"
 
 int nobdos;
 int strace;

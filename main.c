@@ -19,8 +19,8 @@
 #include "vt.h"
 
 #if defined macintosh
-#include <Types.h>
 #include <Events.h>
+#include <Types.h>
 #ifdef THINK_C
 #include <console.h>
 #endif
@@ -29,8 +29,8 @@
 #elif defined _WIN32
 #
 #else /* UNIX */
-#include <unistd.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 #if defined POSIX_TTY
 #include <sys/termios.h>
 #elif defined BeBox
