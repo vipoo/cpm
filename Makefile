@@ -28,7 +28,8 @@ OBJS =	bios.o \
 	vt.o \
 	bdos.o \
 	z80.o \
-	hbios.o
+	hbios.o \
+	hbios_mocks.o
 
 all: cpm$(EXE) cpmtool$(EXE)
 
@@ -39,11 +40,12 @@ cpm$(EXE): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o cpm$(EXE) $(OBJS)
 
 
-bios.o:			bios.c defs.h cpmdisc.h cpm.c
-z80.o:			z80.c defs.h
-disassem.o:	disassem.c defs.h
-main.o:			main.c defs.h
-hbios.o:		hbios.c hbios.h defs.h
+bios.o:					bios.c defs.h cpmdisc.h cpm.c
+z80.o:					z80.c defs.h
+disassem.o:			disassem.c defs.h
+main.o:					main.c defs.h
+hbios.o:				hbios.c hbios.h defs.h
+hbios_mocks.o: 	hbios_mocks.c hbios_mocks.h
 
 clean:
 	rm -f cpm$(EXE) cpmtool$(EXE) *.o *~

@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "hbios_mocks.h"
 
 #define BF_VDA 0x40
 #define BF_VDAIO (BF_VDA + 15)
@@ -12,6 +13,16 @@
 #define BF_SYSVER 0xF1
 
 void hbiosCall(z80info *z80) {
+
+  int i = 0;
+
+  if (activeCommandCount) {
+    for(i = 0; i < activeCommandCount; i++) {
+      printf("> %s", strs[i][0]);
+      printf("< %s", strs[i][1]);
+    }
+  }
+
 
   switch (B) {
   case BF_VDAIO:

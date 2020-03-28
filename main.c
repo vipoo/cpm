@@ -40,6 +40,8 @@
 #endif
 #endif
 
+#include "hbios_mocks.h"
+
 #define INTR_CHAR 31 /* control-underscore */
 
 extern int errno;
@@ -924,10 +926,15 @@ static void interrupt(int s) {
  |  main  --  set up the global vars & run the z80
 \*-----------------------------------------------------------------------*/
 
+
 int main(int argc, const char *argv[]) {
   int x;
   char cmd[256];
   int help = 0;
+  FILE *fp2;
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t read;
 
   cmd[0] = 0;
 
@@ -943,6 +950,24 @@ int main(int argc, const char *argv[]) {
         trace_bdos = 1;
       } else if (!strcmp(argv[x], "--strace")) {
         strace = 1;
+      } else if (!strcmp(argv[x], "--hbios-mocks")) {
+        printf("how do we do this?\r\n");
+
+        fp2 = fopen(argv[x + 1], "r");
+        if (fp2 == NULL) {
+          printf("File %s failed to be opened.\r\n", argv[x + 1]);
+          exit(EXIT_FAILURE);
+        }
+
+        activeCommandCount = 0;
+        while ((read = getline(&line, &len, fp2)) != -1) {
+          if (line[0] == '>')
+            strcpy(strs[activeCommandCount][0], line);
+          else if (line[0] == '<')
+            strcpy(strs[activeCommandCount++][1], line);
+        }
+
+        free(line);
       } else {
         fprintf(stderr, "Unknown option %s\n", argv[x]);
         exit(1);
