@@ -9,6 +9,7 @@
 #define BF_SNDPIT (BF_SND + 2)
 
 #define BF_SYSGET 0xF8
+#define BF_SYSVER 0xF1
 
 void hbiosCall(z80info *z80) {
 
@@ -42,6 +43,14 @@ void hbiosCall(z80info *z80) {
     }
     break;
   }
+
+  case BF_SYSVER:
+    printf("\r\nHBIOS: BF_SYSVER\r\n");
+    A = 0;    /* Previously Active Bank*/
+    D = 0xDD; /* Version number*/
+    E = 0xEE;
+    L = 7;    /*RCZ80*/
+    break;
 
   default:
     printf("\r\nHBIOS: %0x", B);
