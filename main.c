@@ -926,7 +926,6 @@ static void interrupt(int s) {
  |  main  --  set up the global vars & run the z80
 \*-----------------------------------------------------------------------*/
 
-
 int main(int argc, const char *argv[]) {
   int x;
   char cmd[256];
@@ -953,9 +952,10 @@ int main(int argc, const char *argv[]) {
       } else if (!strcmp(argv[x], "--hbios-mocks")) {
         printf("how do we do this?\r\n");
 
-        fp2 = fopen(argv[x + 1], "r");
+        x++;
+        fp2 = fopen(argv[x], "r");
         if (fp2 == NULL) {
-          printf("File %s failed to be opened.\r\n", argv[x + 1]);
+          printf("File %s failed to be opened.\r\n", argv[x]);
           exit(EXIT_FAILURE);
         }
 

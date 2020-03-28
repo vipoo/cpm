@@ -62,5 +62,6 @@ files:
 difflist:
 	@for f in $(FILES); do rcsdiff -q $$f >/dev/null || echo $$f; done
 
+format: SHELL:=/bin/bash
 format:
-	clang-format -i *.c && clang-format -i *.h
+	@clang-format -i *.c && clang-format -i *.h
