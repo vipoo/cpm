@@ -29,35 +29,35 @@
 #include "cpm.c"
 
 /* The BDOS/CCP had better be built with these values! */
-#define CCP 0xD400 /* (BIOS - 0x1600) */
-#define BDOS 0xDC00
+#define CCP   0xD400 /* (BIOS - 0x1600) */
+#define BDOS  0xDC00
 #define CBIOS 0xEA00
 
-#define NENTRY 30    /* number of BIOS entries */
-#define STACK 0xEF00 /* grows down from here */
+#define NENTRY 30     /* number of BIOS entries */
+#define STACK  0xEF00 /* grows down from here */
 
 /* The first NUMHDISCS drives may be specified as hard-drives. */
 #define NUMHDISCS 2
-#define NUMDISCS (MAXDISCS - NUMHDISCS)
+#define NUMDISCS  (MAXDISCS - NUMHDISCS)
 
 #if NUMHDISCS > MAXDISCS
 #error Too many hard-discs specified here.
 #endif
 
 /* disk parameter block information */
-#define DPBSIZE 15
+#define DPBSIZE  15
 #define HDPBLOCK (CBIOS + NENTRY * 8)
-#define DPBLOCK (HDPBLOCK + DPBSIZE)
-#define DIRBUF (DPBLOCK + DPBSIZE)
-#define DPHSIZE 16
+#define DPBLOCK  (HDPBLOCK + DPBSIZE)
+#define DIRBUF   (DPBLOCK + DPBSIZE)
+#define DPHSIZE  16
 
 /* hard disc parameter info */
 #define HDPBASE (DIRBUF + SECTORSIZE)
 
-#define DPBASE (HDPBASE + DPHSIZE * NUMHDISCS)
-#define CVSIZE 0
+#define DPBASE  (HDPBASE + DPHSIZE * NUMHDISCS)
+#define CVSIZE  0
 #define ALVSIZE 33
-#define CVBASE (DPBASE + DPHSIZE * NUMDISCS)
+#define CVBASE  (DPBASE + DPHSIZE * NUMDISCS)
 #define ALVBASE (CVBASE + CVSIZE * NUMDISCS)
 
 /* ST-506 allocation vector size */
@@ -65,7 +65,7 @@
 #define HALVSIZE 306
 
 /* buffer for where to return time/date info */
-#define TIMEBUF (HALVBASE + HALVSIZE * NUMHDISCS)
+#define TIMEBUF     (HALVBASE + HALVSIZE * NUMHDISCS)
 #define TIMEBUFSIZE 5
 
 /* just a marker for future expansion */
@@ -73,23 +73,23 @@
 
 /* ST-506 HD sector info (floppy defs are in cpmdisc.h for makedisc.c) */
 #define HDSECTORSPERTRACK 64
-#define HDTRACKSPERDISC 610
+#define HDTRACKSPERDISC   610
 
 /* offsets into FCB needed for reading/writing Unix files */
-#define FDOFFSET 12
+#define FDOFFSET  12
 #define BLKOFFSET 16
-#define SZOFFSET 20
+#define SZOFFSET  20
 
 /* this batch of macros are not used at the moment */
-#define CBUFF CCP + 7
-#define CIBUFF CCP + 8
+#define CBUFF      CCP + 7
+#define CIBUFF     CCP + 8
 #define DEFAULTFCB 0x005C
 #define DEFAULTBUF 0x0080
-#define IOBYTE 0x0003
-#define DISK 0x0004
-#define DMA 0x0008
-#define USER 0x000A
-#define USERSTART 0x0100
+#define IOBYTE     0x0003
+#define DISK       0x0004
+#define DMA        0x0008
+#define USER       0x000A
+#define USERSTART  0x0100
 
 /* forward declarations: */
 static void seldisc(z80info *z80);
@@ -249,7 +249,7 @@ void warmboot(z80info *z80) {
   z80->dma = 0x0080;
 
   /* and all our default drive info */
-  z80->track = 0;
+  z80->track  = 0;
   z80->sector = 1;
 
   /* make sure the current file/disk is open */
@@ -311,14 +311,14 @@ static void reader(z80info *z80) {
 }
 
 static void home(z80info *z80) {
-  z80->track = 0;
+  z80->track  = 0;
   z80->sector = 1;
 }
 
 /* Open disk image */
 
 static void realizedisk(z80info *z80) {
-  int drive = z80->drive;
+  int  drive = z80->drive;
   char drivestr[80];
 
   strcpy(drivestr, drive < NUMHDISCS ? "A-Hdrive" : "A-drive");
@@ -326,8 +326,8 @@ static void realizedisk(z80info *z80) {
 
   if (z80->drives[drive] == NULL) {
     struct stat statbuf;
-    long secs;
-    FILE *fp;
+    long        secs;
+    FILE *      fp;
 
     fp = fopen(drivestr, "rb+");
 
@@ -363,7 +363,7 @@ static void realizedisk(z80info *z80) {
 
     /* printf(stderr,"\r\nOpen %s on drive %d\n", drivestr, drive); */
 
-    z80->drives[drive] = fp;
+    z80->drives[drive]   = fp;
     z80->drivelen[drive] = secs * SECTORSIZE;
   }
 }
@@ -411,14 +411,14 @@ static void setsector(z80info *z80) {
 static void setdma(z80info *z80) { z80->dma = (B << 8) + C; }
 
 static void rdsector(z80info *z80) {
-  int n;
-  int drive = z80->drive;
-  int sectors = (drive < NUMHDISCS) ? HDSECTORSPERTRACK : SECTORSPERTRACK;
-  long offset = SECTORSIZE * ((long)z80->sector - SECTOROFFSET + sectors * ((long)z80->track - TRACKOFFSET));
+  int   n;
+  int   drive   = z80->drive;
+  int   sectors = (drive < NUMHDISCS) ? HDSECTORSPERTRACK : SECTORSPERTRACK;
+  long  offset  = SECTORSIZE * ((long)z80->sector - SECTOROFFSET + sectors * ((long)z80->track - TRACKOFFSET));
   FILE *fp;
-  long len;
+  long  len;
   realizedisk(z80);
-  fp = z80->drives[drive];
+  fp  = z80->drives[drive];
   len = z80->drivelen[drive];
 
   if (fp == NULL) {
@@ -449,13 +449,13 @@ static void rdsector(z80info *z80) {
 }
 
 static void wrsector(z80info *z80) {
-  int drive = z80->drive;
-  int sectors = (drive < NUMHDISCS) ? HDSECTORSPERTRACK : SECTORSPERTRACK;
-  long offset = SECTORSIZE * ((long)z80->sector - SECTOROFFSET + sectors * ((long)z80->track - TRACKOFFSET));
+  int   drive   = z80->drive;
+  int   sectors = (drive < NUMHDISCS) ? HDSECTORSPERTRACK : SECTORSPERTRACK;
+  long  offset  = SECTORSIZE * ((long)z80->sector - SECTOROFFSET + sectors * ((long)z80->track - TRACKOFFSET));
   FILE *fp;
-  long len;
+  long  len;
   realizedisk(z80);
-  fp = z80->drives[drive];
+  fp  = z80->drives[drive];
   len = z80->drivelen[drive];
 
   if (fp == NULL) {
@@ -528,7 +528,7 @@ static void liststat(z80info *z80) { A = 0xFF; }
  */
 static int addr2int(unsigned char *addr) {
   unsigned char *a = (unsigned char *)addr;
-  unsigned int t;
+  unsigned int   t;
 
   t = a[0] | (a[1] << 8) | (a[2] << 16) | (a[3] << 24);
   return (int)t;
@@ -536,7 +536,7 @@ static int addr2int(unsigned char *addr) {
 
 static void int2addr(unsigned char *addr, int val) {
   unsigned char *a = (unsigned char *)addr;
-  unsigned int t = (unsigned int)val;
+  unsigned int   t = (unsigned int)val;
 
   a[0] = t & 0xFF;
   a[1] = (t >> 8) & 0xFF;
@@ -569,7 +569,7 @@ FILE *cpm_file_get(int idx) {
 
 int cpm_file_free(int x) {
   if (x >= 0 && x < CPM_FILES && cpm_file[x]) {
-    int rtn = fclose(cpm_file[x]);
+    int rtn     = fclose(cpm_file[x]);
     cpm_file[x] = 0;
     return rtn;
   } else {
@@ -582,11 +582,11 @@ int cpm_file_free(int x) {
    The algorithm uses the FCB to store info about the UNIX file.
  */
 static void openunix(z80info *z80) {
-  char filename[20], *fp;
+  char  filename[20], *fp;
   byte *cp;
-  int i;
+  int   i;
   FILE *fd;
-  int fd_no;
+  int   fd_no;
 
   cp = &(z80->mem[DE + 1]);
   fp = filename;
@@ -604,7 +604,7 @@ static void openunix(z80info *z80) {
   }
 
   *fp = 0;
-  A = 0xFF;
+  A   = 0xFF;
 
   /* if file is not readable, try opening it read-only */
   if ((fd = fopen(filename, "rb+")) == NULL)
@@ -625,11 +625,11 @@ static void openunix(z80info *z80) {
    The algorithm uses the FCB to store info about the UNIX file.
  */
 static void createunix(z80info *z80) {
-  char filename[20], *fp;
+  char  filename[20], *fp;
   byte *cp;
-  int i;
+  int   i;
   FILE *fd;
-  int fd_no;
+  int   fd_no;
 
   cp = &(z80->mem[DE + 1]);
   fp = filename;
@@ -647,7 +647,7 @@ static void createunix(z80info *z80) {
   }
 
   *fp = 0;
-  A = 0xFF;
+  A   = 0xFF;
 
   if ((fd = fopen(filename, "wb+")) == NULL)
     return;
@@ -667,13 +667,13 @@ static void createunix(z80info *z80) {
  */
 static void rdunix(z80info *z80) {
   byte *cp;
-  int i, blk, size;
+  int   i, blk, size;
   FILE *fd;
-  int fd_no;
+  int   fd_no;
 
-  cp = &(z80->mem[z80->dma]);
-  fd = cpm_file_get((fd_no = addr2int(&z80->mem[DE + FDOFFSET])));
-  blk = addr2int(&z80->mem[DE + BLKOFFSET]);
+  cp   = &(z80->mem[z80->dma]);
+  fd   = cpm_file_get((fd_no = addr2int(&z80->mem[DE + FDOFFSET])));
+  blk  = addr2int(&z80->mem[DE + BLKOFFSET]);
   size = addr2int(&z80->mem[DE + SZOFFSET]);
 
   A = 0xFF;
@@ -684,7 +684,7 @@ static void rdunix(z80info *z80) {
   if (fseek(fd, (long)blk << 7, SEEK_SET) != 0)
     return;
 
-  i = fread(cp, 1, SECTORSIZE, fd);
+  i    = fread(cp, 1, SECTORSIZE, fd);
   size = i;
 
   if (i == 0)
@@ -707,13 +707,13 @@ static void rdunix(z80info *z80) {
  */
 static void wrunix(z80info *z80) {
   byte *cp;
-  int i, blk, size;
+  int   i, blk, size;
   FILE *fd;
-  int fd_no;
+  int   fd_no;
 
-  cp = &(z80->mem[z80->dma]);
-  fd = cpm_file_get((fd_no = addr2int(&z80->mem[DE + FDOFFSET])));
-  blk = addr2int(&z80->mem[DE + BLKOFFSET]);
+  cp   = &(z80->mem[z80->dma]);
+  fd   = cpm_file_get((fd_no = addr2int(&z80->mem[DE + FDOFFSET])));
+  blk  = addr2int(&z80->mem[DE + BLKOFFSET]);
   size = addr2int(&z80->mem[DE + SZOFFSET]);
 
   A = 0xFF;
@@ -741,7 +741,7 @@ static void closeunix(z80info *z80) {
   int fd_no;
 
   fd_no = addr2int(&z80->mem[DE + FDOFFSET]);
-  A = 0xFF;
+  A     = 0xFF;
 
   if (cpm_file_free(fd_no))
     return;
@@ -766,10 +766,10 @@ void finish(z80info *z80) {
         HL+4:SECONDS (BCD)
  */
 static void dotime(z80info *z80) {
-  time_t now;
+  time_t     now;
   struct tm *t;
-  word days;
-  int y;
+  word       days;
+  int        y;
 
   if (C != 0) /* do not support setting the time yet */
     return;

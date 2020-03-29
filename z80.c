@@ -20,12 +20,12 @@ int bdos_return = -1;
 /* entry in "REGPAIRXY[]" to get to the IX or IY registers */
 #define XYPAIR 2
 
-#define REG z80->reg
+#define REG       z80->reg
 #define REGPAIRAF z80->regpairaf
 #define REGPAIRSP z80->regpairsp
 #define REGPAIRXY z80->regpairxy
-#define REGIXY z80->regixy
-#define REGIR z80->regir
+#define REGIXY    z80->regixy
+#define REGIR     z80->regir
 
 /* bit masks for jump/call/return group instructions */
 static const byte flagmask[] = {ZERO, CARRY, PARITY, SIGN};
@@ -34,14 +34,14 @@ static const byte flagmask[] = {ZERO, CARRY, PARITY, SIGN};
 static const byte bitmask[] = {BIT0, BIT1, BIT2, BIT3, BIT4, BIT5, BIT6, BIT7};
 
 /* parity setting array - initialized in init_z80info() below */
-static int parityarr[0x100];
+static int     parityarr[0x100];
 static boolean parity_inited = FALSE;
 
 /* handy defines for playing with the F(lag) register */
 
-#define flagon(flag) (F |= (flag))
-#define flagoff(flag) (F &= ~(flag))
-#define setflag(flag, val) ((val) ? flagon(flag) : flagoff(flag))
+#define flagon(flag)         (F |= (flag))
+#define flagoff(flag)        (F &= ~(flag))
+#define setflag(flag, val)   ((val) ? flagon(flag) : flagoff(flag))
 #define resetflag(flag, val) ((val) ? flagoff(flag) : flagon(flag))
 
 #define setsign() setflag(SIGN, A &BIT7)
@@ -63,79 +63,79 @@ static boolean parity_inited = FALSE;
 
 /* set the flags for most bit-twiddling instructions */
 
-#define flags(val)                                                                                                                                                                                                                             \
-  {                                                                                                                                                                                                                                            \
-    v = val;                                                                                                                                                                                                                                   \
-    setflag(SIGN, v &BIT7);                                                                                                                                                                                                                    \
-    setflag(ZERO, !v);                                                                                                                                                                                                                         \
-    flagoff(HALF);                                                                                                                                                                                                                             \
-    flagoff(NEGATIVE);                                                                                                                                                                                                                         \
-    setparity(v);                                                                                                                                                                                                                              \
+#define flags(val)          \
+  {                         \
+    v = val;                \
+    setflag(SIGN, v &BIT7); \
+    setflag(ZERO, !v);      \
+    flagoff(HALF);          \
+    flagoff(NEGATIVE);      \
+    setparity(v);           \
   }
 
 /* for generic 8-bit arithmetic instructions */
 
-#define arith8(val, carry, sub)                                                                                                                                                                                                                \
-  {                                                                                                                                                                                                                                            \
-    vv = val;                                                                                                                                                                                                                                  \
-    s = sub;                                                                                                                                                                                                                                   \
-    if (s) {                                                                                                                                                                                                                                   \
-      flagon(NEGATIVE);                                                                                                                                                                                                                        \
-      tt = A - vv;                                                                                                                                                                                                                             \
-      hh = (A & MASK4) - (vv & MASK4);                                                                                                                                                                                                         \
-      if ((carry) && (F & CARRY)) {                                                                                                                                                                                                            \
-        tt -= 1;                                                                                                                                                                                                                               \
-        hh -= 1;                                                                                                                                                                                                                               \
-      }                                                                                                                                                                                                                                        \
-      setflag(HALF, hh &BIT4);                                                                                                                                                                                                                 \
-      setflag(OVERFLOW, ((A & BIT7) != (vv & BIT7)) && ((A & BIT7) != (tt & BIT7)));                                                                                                                                                           \
-    } else {                                                                                                                                                                                                                                   \
-      flagoff(NEGATIVE);                                                                                                                                                                                                                       \
-      tt = A + vv;                                                                                                                                                                                                                             \
-      hh = (A & MASK4) + (vv & MASK4);                                                                                                                                                                                                         \
-      if ((carry) && (F & CARRY)) {                                                                                                                                                                                                            \
-        tt += 1;                                                                                                                                                                                                                               \
-        hh += 1;                                                                                                                                                                                                                               \
-      }                                                                                                                                                                                                                                        \
-      setflag(HALF, hh &BIT4);                                                                                                                                                                                                                 \
-      setflag(OVERFLOW, ((A & BIT7) == (vv & BIT7)) && ((A & BIT7) != (tt & BIT7)));                                                                                                                                                           \
-    }                                                                                                                                                                                                                                          \
-    setflag(SIGN, tt &BIT7);                                                                                                                                                                                                                   \
-    setflag(CARRY, tt &BIT8);                                                                                                                                                                                                                  \
-    v = tt;                                                                                                                                                                                                                                    \
-    setflag(ZERO, !v);                                                                                                                                                                                                                         \
+#define arith8(val, carry, sub)                                                      \
+  {                                                                                  \
+    vv = val;                                                                        \
+    s  = sub;                                                                        \
+    if (s) {                                                                         \
+      flagon(NEGATIVE);                                                              \
+      tt = A - vv;                                                                   \
+      hh = (A & MASK4) - (vv & MASK4);                                               \
+      if ((carry) && (F & CARRY)) {                                                  \
+        tt -= 1;                                                                     \
+        hh -= 1;                                                                     \
+      }                                                                              \
+      setflag(HALF, hh &BIT4);                                                       \
+      setflag(OVERFLOW, ((A & BIT7) != (vv & BIT7)) && ((A & BIT7) != (tt & BIT7))); \
+    } else {                                                                         \
+      flagoff(NEGATIVE);                                                             \
+      tt = A + vv;                                                                   \
+      hh = (A & MASK4) + (vv & MASK4);                                               \
+      if ((carry) && (F & CARRY)) {                                                  \
+        tt += 1;                                                                     \
+        hh += 1;                                                                     \
+      }                                                                              \
+      setflag(HALF, hh &BIT4);                                                       \
+      setflag(OVERFLOW, ((A & BIT7) == (vv & BIT7)) && ((A & BIT7) != (tt & BIT7))); \
+    }                                                                                \
+    setflag(SIGN, tt &BIT7);                                                         \
+    setflag(CARRY, tt &BIT8);                                                        \
+    v = tt;                                                                          \
+    setflag(ZERO, !v);                                                               \
   }
 
 /* set flags for most logical (AND, OR, ...) instructions */
 
-#define logical(hval)                                                                                                                                                                                                                          \
-  {                                                                                                                                                                                                                                            \
-    h = hval;                                                                                                                                                                                                                                  \
-    setflag(SIGN, A &BIT7);                                                                                                                                                                                                                    \
-    setflag(ZERO, !A);                                                                                                                                                                                                                         \
-    setflag(HALF, h);                                                                                                                                                                                                                          \
-    setparity(A);                                                                                                                                                                                                                              \
-    flagoff(NEGATIVE);                                                                                                                                                                                                                         \
-    flagoff(CARRY);                                                                                                                                                                                                                            \
+#define logical(hval)       \
+  {                         \
+    h = hval;               \
+    setflag(SIGN, A &BIT7); \
+    setflag(ZERO, !A);      \
+    setflag(HALF, h);       \
+    setparity(A);           \
+    flagoff(NEGATIVE);      \
+    flagoff(CARRY);         \
   }
 
 /* for incrementing/decrementing of a register */
 
-#define increment(reg, neg)                                                                                                                                                                                                                    \
-  {                                                                                                                                                                                                                                            \
-    i = reg;                                                                                                                                                                                                                                   \
-    n = neg;                                                                                                                                                                                                                                   \
-    tt = i;                                                                                                                                                                                                                                    \
-    if (n) {                                                                                                                                                                                                                                   \
-      setflag(HALF, !(tt-- & MASK4));                                                                                                                                                                                                          \
-      setflag(OVERFLOW, (i & BIT7) && !(tt & BIT7));                                                                                                                                                                                           \
-    } else {                                                                                                                                                                                                                                   \
-      setflag(HALF, !(++tt & MASK4));                                                                                                                                                                                                          \
-      setflag(OVERFLOW, !(i & BIT7) && (tt & BIT7));                                                                                                                                                                                           \
-    }                                                                                                                                                                                                                                          \
-    setflag(SIGN, tt &BIT7);                                                                                                                                                                                                                   \
-    setflag(ZERO, !(tt & MASK8));                                                                                                                                                                                                              \
-    setflag(NEGATIVE, n);                                                                                                                                                                                                                      \
+#define increment(reg, neg)                          \
+  {                                                  \
+    i  = reg;                                        \
+    n  = neg;                                        \
+    tt = i;                                          \
+    if (n) {                                         \
+      setflag(HALF, !(tt-- & MASK4));                \
+      setflag(OVERFLOW, (i & BIT7) && !(tt & BIT7)); \
+    } else {                                         \
+      setflag(HALF, !(++tt & MASK4));                \
+      setflag(OVERFLOW, !(i & BIT7) && (tt & BIT7)); \
+    }                                                \
+    setflag(SIGN, tt &BIT7);                         \
+    setflag(ZERO, !(tt & MASK8));                    \
+    setflag(NEGATIVE, n);                            \
   }
 
 /*-----------------------------------------------------------------------*\
@@ -144,10 +144,10 @@ static boolean parity_inited = FALSE;
 \*-----------------------------------------------------------------------*/
 
 boolean z80_emulator(z80info *z80, int count) {
-  byte t = 0, t1, t2, cy, v, *r = NULL;
-  word tt, tt2, hh, vv, *rr;
+  byte     t = 0, t1, t2, cy, v, *r = NULL;
+  word     tt, tt2, hh, vv, *rr;
   longword ttt;
-  int i, j, h, n, s;
+  int      i, j, h, n, s;
 
   /* main loop  --  all "goto"s eventually end up here */
 infloop:
@@ -173,11 +173,11 @@ infloop:
 
     if (RESET) /* RESET "line" has been "pulled" */
     {
-      IFF = 0;
-      IFF2 = 0;
-      I = 0;
-      R = 0;
-      PC = 0;
+      IFF   = 0;
+      IFF2  = 0;
+      I     = 0;
+      R     = 0;
+      PC    = 0;
       IMODE = 0;
       RESET = FALSE;
       if (NMI || INTR) /* catch these the next time */
@@ -188,7 +188,7 @@ infloop:
       SETMEM(SP, PC >> 8);
       --SP;
       SETMEM(SP, PC & MASK8);
-      PC = 0x66;
+      PC  = 0x66;
       IFF = 0;
       NMI = FALSE;
       if (INTR) /* catch this the next time */
@@ -224,7 +224,7 @@ infloop:
         break;
       }
       IFF = IFF2 = 0;
-      INTR = 0;
+      INTR       = 0;
     } else if (INTR) /* try again the next time around */
       EVENT = TRUE;
 
@@ -357,7 +357,7 @@ infloop:
     t = MEM(PC);
     PC++;
     t1 = MEM(PC);
-    A = MEM((t1 << 8) | t);
+    A  = MEM((t1 << 8) | t);
     PC++;
     break;
   case 0x32: /* ld (nn),a */
@@ -420,7 +420,7 @@ infloop:
   case 0xD1: /* pop de */
   case 0xE1: /* pop hl */
   case 0xF1: /* pop af */
-    rr = REGPAIRAF[(t >> 4) & MASK2];
+    rr  = REGPAIRAF[(t >> 4) & MASK2];
     *rr = MEM(SP);
     SP++;
     *rr |= MEM(SP) << 8;
@@ -442,10 +442,10 @@ infloop:
     break;
   case 0xE3: /* ex (sp),hl */
     t1 = L;
-    L = MEM(SP);
+    L  = MEM(SP);
     SETMEM(SP, t1);
     t1 = H;
-    H = MEM((SP + 1) & MASK16);
+    H  = MEM((SP + 1) & MASK16);
     SETMEM((SP + 1) & MASK16, t1);
     break;
 
@@ -671,7 +671,7 @@ contsw:
   case 0x29: /* add hl,hl */
   case 0x39: /* add hl,sp */
     ttt = HL + *REGPAIRSP[(t >> 4) & MASK2];
-    hh = (HL & MASK12) + (*REGPAIRSP[(t >> 4) & MASK2] & MASK12);
+    hh  = (HL & MASK12) + (*REGPAIRSP[(t >> 4) & MASK2] & MASK12);
     flagoff(NEGATIVE);
     setflag(CARRY, ttt & BIT16);
     setflag(HALF, hh & BIT12);
@@ -977,7 +977,7 @@ bitinstr:
   case 0x3C: /* srl h */
   case 0x3D: /* srl l */
   case 0x3F: /* srl a */
-    r = REG[t & MASK3];
+    r  = REG[t & MASK3];
     cy = F & CARRY;
     if (t & BIT3) {
       setflag(CARRY, *r & BIT0);
@@ -1268,7 +1268,7 @@ ireginstr:
 
   /* pointer to either the IX or the IY register */
   rr = REGIXY[(t >> 5) & MASK1];
-  t = MEM(PC);
+  t  = MEM(PC);
   PC++;
 
   /* note: in comments below, "ir" is either "ix" or "iy" */
@@ -1420,10 +1420,10 @@ ireginstr:
   case 0x29: /* add ir,rr */
   case 0x39: /* add ir,sp */
     REGPAIRXY[XYPAIR] = rr;
-    i = *rr;
-    j = *REGPAIRXY[(t >> 4) & MASK2];
-    ttt = i + j;
-    hh = (i & MASK12) + (j & MASK12);
+    i                 = *rr;
+    j                 = *REGPAIRXY[(t >> 4) & MASK2];
+    ttt               = i + j;
+    hh                = (i & MASK12) + (j & MASK12);
     flagoff(NEGATIVE);
     setflag(CARRY, ttt & BIT16);
     setflag(HALF, hh & BIT12);
@@ -1552,7 +1552,7 @@ extinstr:
 
   case 0x44: /* neg */
     t1 = A;
-    A = 0;
+    A  = 0;
     arith8(t1, 0, 1);
     A = v;
     /* flagon(HALF); */
@@ -1580,14 +1580,14 @@ extinstr:
   case 0x62: /* sbc hl,hl */
   case 0x72: /* sbc hl,sp */
     vv = *REGPAIRSP[(t >> 4) & MASK2];
-    n = !(t & BIT3);
+    n  = !(t & BIT3);
     if (n) {
       ttt = (int)HL - (int)vv - ((F & CARRY) ? 1 : 0);
-      hh = (int)(HL & MASK12) - (int)(vv & MASK12) - ((F & CARRY) ? 1 : 0);
+      hh  = (int)(HL & MASK12) - (int)(vv & MASK12) - ((F & CARRY) ? 1 : 0);
       setflag(OVERFLOW, (HL & BIT15) != (vv & BIT15) && (vv & BIT15) == (ttt & BIT15));
     } else {
       ttt = (int)HL + (int)vv + ((F & CARRY) ? 1 : 0);
-      hh = (int)(HL & MASK12) + (int)(vv & MASK12) + ((F & CARRY) ? 1 : 0);
+      hh  = (int)(HL & MASK12) + (int)(vv & MASK12) + ((F & CARRY) ? 1 : 0);
       setflag(OVERFLOW, (HL & BIT15) == (vv & BIT15) && (vv & BIT15) != (ttt & BIT15));
     }
     setflag(SIGN, ttt & BIT15);
@@ -1617,7 +1617,7 @@ extinstr:
 
   case 0x45: /* retn */
     IFF = IFF2;
-    PC = MEM(SP);
+    PC  = MEM(SP);
     SP++;
     PC |= MEM(SP) << 8;
     SP++;
@@ -1857,15 +1857,15 @@ z80info *init_z80info(z80info *z80) {
   REGIR[1] = &R;
 
   /* initialize the other misc stuff */
-  z80->trace = FALSE;
-  z80->step = FALSE;
-  z80->sig = 0;
+  z80->trace   = FALSE;
+  z80->step    = FALSE;
+  z80->sig     = 0;
   z80->syscall = FALSE;
 
   /* initialize the CP/M BIOS data */
-  z80->drive = 0;
-  z80->dma = 0x80;
-  z80->track = 0;
+  z80->drive  = 0;
+  z80->dma    = 0x80;
+  z80->track  = 0;
   z80->sector = 1;
 
   /* initialize the global parity array if necessary */

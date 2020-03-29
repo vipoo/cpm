@@ -7,11 +7,11 @@
 int last = -1;
 
 int kpoll(int w) {
-  int c;
+  int           c;
   unsigned char d;
-  int tries;
+  int           tries;
   if (last != -1) {
-    c = last;
+    c    = last;
     last = -1;
     return c;
   }
@@ -171,7 +171,7 @@ void putmes(const char *s) { write(fileno(stdout), s, strlen(s)); }
 
 void vt52(int c) { /* simple vt52,adm3a => ANSI conversion */
   static int state = 0, x, y;
-  char buff[32];
+  char       buff[32];
 #ifdef DEBUGLOG
   static FILE *log = NULL;
   if (!log)
@@ -255,11 +255,11 @@ void vt52(int c) { /* simple vt52,adm3a => ANSI conversion */
     }
     break;
   case 2:
-    y = c - ' ' + 1;
+    y     = c - ' ' + 1;
     state = 3;
     break;
   case 3:
-    x = c - ' ' + 1;
+    x     = c - ' ' + 1;
     state = 0;
     sprintf(buff, "\033[%d;%dH", y, x);
     putmes(buff);

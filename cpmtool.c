@@ -24,17 +24,17 @@
  */
 
 struct cpm_dpb {
-  unsigned short spt;     /* 128 byte sectors per track (26) */
-  unsigned char bsh;      /* Block shift: 3 = 1K, 4 = 2K, etc. (3) */
-  unsigned char blm;      /* Block mask: 0x7 = 1K, 0xF = 2K, etc. (7) */
-  unsigned char exm;      /* Extent mask: full record count = 128 * (EX & exm) + rc */
-  unsigned short dsm;     /* Number of blocks on the disk - 1 */
-  unsigned short drm;     /* Number of directory entries - 1 */
-  unsigned char al0;      /* Directory allocation bitmap, first byte */
-  unsigned char al1;      /* Directory allocation bitmap, second byte */
-  unsigned char cks;      /* Checksum vector size: 0 for fixed disk */
-  unsigned short off;     /* Offset, number of reserved tracks */
-  unsigned char skew[64]; /* Skew table */
+  unsigned short spt;      /* 128 byte sectors per track (26) */
+  unsigned char  bsh;      /* Block shift: 3 = 1K, 4 = 2K, etc. (3) */
+  unsigned char  blm;      /* Block mask: 0x7 = 1K, 0xF = 2K, etc. (7) */
+  unsigned char  exm;      /* Extent mask: full record count = 128 * (EX & exm) + rc */
+  unsigned short dsm;      /* Number of blocks on the disk - 1 */
+  unsigned short drm;      /* Number of directory entries - 1 */
+  unsigned char  al0;      /* Directory allocation bitmap, first byte */
+  unsigned char  al1;      /* Directory allocation bitmap, second byte */
+  unsigned char  cks;      /* Checksum vector size: 0 for fixed disk */
+  unsigned short off;      /* Offset, number of reserved tracks */
+  unsigned char  skew[64]; /* Skew table */
 };
 
 struct cpm_dpb dpb_fd = {
@@ -109,13 +109,13 @@ struct cpm_dpb *dpb = &dpb_fd;
 
 /* CP/M 2.2 directory entry offsets */
 
-#define CPM_BYTE_DIR_UU 0
-#define CPM_BYTE8_DIR_F 1
-#define CPM_BYTE3_DIR_T 9
-#define CPM_BYTE_DIR_EX 12
-#define CPM_BYTE_DIR_S1 13
-#define CPM_BYTE_DIR_S2 14
-#define CPM_BYTE_DIR_RC 15
+#define CPM_BYTE_DIR_UU   0
+#define CPM_BYTE8_DIR_F   1
+#define CPM_BYTE3_DIR_T   9
+#define CPM_BYTE_DIR_EX   12
+#define CPM_BYTE_DIR_S1   13
+#define CPM_BYTE_DIR_S2   14
+#define CPM_BYTE_DIR_RC   15
 #define CPM_BYTE16_DIR_AL 16
 
 struct dirent {
@@ -141,19 +141,19 @@ FILE *disk;
 /* Get sector.  Skip reserved tracks.  Deskew. */
 
 void getsect(unsigned char *buf, int sect) {
-  int track = sect / dpb->spt;
+  int track  = sect / dpb->spt;
   int sector = sect % dpb->spt;
-  sector = dpb->skew[sector]; /* De-interleave sectors */
-  track += dpb->off;          /* Skip over reserved tracks */
+  sector     = dpb->skew[sector]; /* De-interleave sectors */
+  track += dpb->off;              /* Skip over reserved tracks */
   fseek(disk, (track * dpb->spt + sector) * SECTOR_SIZE, SEEK_SET);
   fread((char *)buf, SECTOR_SIZE, 1, disk);
 }
 
 void putsect(unsigned char *buf, int sect) {
-  int track = sect / dpb->spt;
+  int track  = sect / dpb->spt;
   int sector = sect % dpb->spt;
-  sector = dpb->skew[sector]; /* De-interleave sectors */
-  track += dpb->off;          /* Skip over reserved tracks */
+  sector     = dpb->skew[sector]; /* De-interleave sectors */
+  track += dpb->off;              /* Skip over reserved tracks */
   fseek(disk, (track * dpb->spt + sector) * SECTOR_SIZE, SEEK_SET);
   fwrite((char *)buf, SECTOR_SIZE, 1, disk);
 }
@@ -169,9 +169,9 @@ int lower(int c) {
 
 char *getname(struct dirent *d) {
   static char s[50];
-  int p = 0;
-  int r;
-  int i;
+  int         p = 0;
+  int         r;
+  int         i;
   /* Get name */
   for (i = 0; i != sizeof(d->f); i++) {
     s[p++] = lower(d->f[i]);
@@ -181,7 +181,7 @@ char *getname(struct dirent *d) {
     --p;
   /* Append '.' */
   s[p++] = '.';
-  r = p;
+  r      = p;
   /* Get extension */
   for (i = 0; i != sizeof(d->t); i++) {
     s[p++] = lower(d->t[i]);
@@ -251,7 +251,7 @@ struct name {
 };
 
 struct name *names[1024];
-int name_n;
+int          name_n;
 
 int comp(struct name **l, struct name **r) { return strcmp((*l)->name, (*r)->name); }
 
@@ -259,7 +259,7 @@ int comp(struct name **l, struct name **r) { return strcmp((*l)->name, (*r)->nam
 
 int alloc_extents(int *list, int extents) {
   unsigned char buf[SECTOR_SIZE];
-  int x;
+  int           x;
   for (x = SECTOR_DIR; x != SECTOR_DIR + SECTOR_DIR_SIZE; ++x) {
     int y;
     getsect(buf, x);
@@ -281,8 +281,8 @@ unsigned short *alloc_map; /* 0xFFFF is free, 0xFFFE allocated for directory, ot
 
 void get_map() {
   unsigned char buf[SECTOR_SIZE];
-  int x;
-  int entry_no;
+  int           x;
+  int           entry_no;
   if (!alloc_map) {
     alloc_map = malloc(sizeof(alloc_map[0]) * (dpb->dsm + 1));
     /* Initialize to all free */
@@ -367,8 +367,8 @@ int amount_free(void) {
 
 int find_file(struct dirent *dir, char *filename, int ex, int del) {
   unsigned char buf[SECTOR_SIZE];
-  int x;
-  int flg = -1;
+  int           x;
+  int           flg = -1;
   for (x = 0; x != SECTOR_DIR_SIZE; ++x) {
     int y;
     getsect(buf, x + SECTOR_DIR);
@@ -379,7 +379,7 @@ int find_file(struct dirent *dir, char *filename, int ex, int del) {
         if (!strcmp(s, filename)) {
           if (del) {
             d->uu = 0xe5;
-            flg = 0;
+            flg   = 0;
             putsect(buf, x + SECTOR_DIR);
           } else {
             memcpy(dir, d, ENTRY_SIZE);
@@ -396,16 +396,16 @@ int find_file(struct dirent *dir, char *filename, int ex, int del) {
 /* Read a file: provide with first extent */
 
 int read_file(char *filename, struct dirent *dir, FILE *f) {
-  int rtn = 0;
+  int           rtn = 0;
   unsigned char buf[SECTOR_SIZE];
-  int exno = 0; /* Extent number */
+  int           exno = 0; /* Extent number */
   for (;;) {
     int recno; /* Record number within extent */
     for (recno = 0; recno != RC(dir) && recno != SECTORS_PER_EXTENT; ++recno) {
       int blkno;  /* Block number within extent */
       int recblk; /* Record number within block */
       int blk;    /* Current block */
-      blkno = (recno >> dpb->bsh);
+      blkno  = (recno >> dpb->bsh);
       recblk = (recno & dpb->blm);
       if (BIG_DISK)
         blk = dir->al[blkno * 2] + 256 * dir->al[blkno * 2 + 1];
@@ -510,11 +510,11 @@ int alloc_space(int *list, int blocks) {
 /* Write a directory entry */
 
 int write_dir(char *name, int extentno, int extent, int rc, int *al) {
-  int z, i;
+  int           z, i;
   struct dirent d[1];
   unsigned char buf[SECTOR_SIZE];
-  int sect = extent / (SECTOR_SIZE / ENTRY_SIZE);
-  int ofst = extent % (SECTOR_SIZE / ENTRY_SIZE);
+  int           sect = extent / (SECTOR_SIZE / ENTRY_SIZE);
+  int           ofst = extent % (SECTOR_SIZE / ENTRY_SIZE);
   getsect(buf, sect);
   putname(d, name);
   extentno *= (dpb->exm + 1);
@@ -530,7 +530,7 @@ int write_dir(char *name, int extentno, int extent, int rc, int *al) {
   for (i = z = 0; z != 16; ++z) {
     if (BIG_DISK) {
       d->al[z++] = al[i];
-      d->al[z] = (al[i] >> 8);
+      d->al[z]   = (al[i] >> 8);
     } else {
       d->al[z] = al[i++];
     }
@@ -544,17 +544,17 @@ int write_dir(char *name, int extentno, int extent, int rc, int *al) {
 /* Write a file */
 
 int write_file(char *name, unsigned char *buf, long sects) {
-  int x, z;
+  int  x, z;
   int *blk_list;
   int *extent_list;
-  long blks;        /* Number of blocks needed for this file */
-  long extents;     /* Number of extents needed for this file */
-  int rc;           /* Counter for current extent */
-  int secno;        /* Sector number within extent */
-  int extent_blkno; /* Block number within extent */
-  int extentno;     /* Extent number of file */
-  int blkno;        /* Block number */
-  int al[16];       /* Allocation map for current extent */
+  long blks;         /* Number of blocks needed for this file */
+  long extents;      /* Number of extents needed for this file */
+  int  rc;           /* Counter for current extent */
+  int  secno;        /* Sector number within extent */
+  int  extent_blkno; /* Block number within extent */
+  int  extentno;     /* Extent number of file */
+  int  blkno;        /* Block number */
+  int  al[16];       /* Allocation map for current extent */
 
   /* Compute number of blocks needed for file */
   blks = (sects + SECTORS_PER_BLOCK - 1) / SECTORS_PER_BLOCK;
@@ -578,11 +578,11 @@ int write_file(char *name, unsigned char *buf, long sects) {
   /* Write file */
   for (z = 0; z != 16; ++z)
     al[z] = 0;
-  blkno = 0;
+  blkno        = 0;
   extent_blkno = 0;
-  extentno = 0;
-  secno = 0;
-  rc = 0;
+  extentno     = 0;
+  secno        = 0;
+  rc           = 0;
   for (x = 0; x != sects; ++x) {
     al[extent_blkno] = blk_list[blkno];
     putsect(buf + x * SECTOR_SIZE, (blk_list[blkno] << dpb->bsh) + secno);
@@ -613,11 +613,11 @@ int write_file(char *name, unsigned char *buf, long sects) {
 /* Put a file on the disk */
 
 int put_file(char *local_name, char *atari_name) {
-  FILE *f = fopen(local_name, "r");
-  long x, size; /* File size in bytes */
-  long up;      /* Size in bytes rounded up to sectors */
+  FILE *         f = fopen(local_name, "r");
+  long           x, size; /* File size in bytes */
+  long           up;      /* Size in bytes rounded up to sectors */
   unsigned char *buf;
-  int rtn;
+  int            rtn;
   if (!f) {
     printf("Couldn't open '%s'\n", local_name);
     return -1;
@@ -668,9 +668,9 @@ int put_file(char *local_name, char *atari_name) {
 /* Get file size in sectors */
 
 int get_info(struct dirent *dir, char *name) {
-  int rtn = 0;
+  int rtn   = 0;
   int count = 0;
-  int exno = 0; /* Extent number */
+  int exno  = 0; /* Extent number */
   /* fprintf(stderr, "info for %s\n", name); */
   for (;;) {
     int recno; /* Record number within extent */
@@ -715,9 +715,9 @@ int get_info(struct dirent *dir, char *name) {
 void atari_dir(int all, int full, int single) {
   unsigned char buf[SECTOR_SIZE];
   struct dirent dir[1];
-  int x, y;
-  int rows;
-  int cols = (80 / 13);
+  int           x, y;
+  int           rows;
+  int           cols = (80 / 13);
   for (x = 0; x != SECTOR_DIR_SIZE; ++x) {
     int y;
     getsect(buf, x + SECTOR_DIR);
@@ -725,9 +725,9 @@ void atari_dir(int all, int full, int single) {
       struct dirent *d = (struct dirent *)(buf + y);
       if (d->uu < 0x20 && EXTENT_NO(d) == 0) {
         struct name *nam;
-        char *s = getname(d);
-        nam = (struct name *)malloc(sizeof(struct name));
-        nam->name = strdup(s);
+        char *       s = getname(d);
+        nam            = (struct name *)malloc(sizeof(struct name));
+        nam->name      = strdup(s);
         if (d->t[0] & 0x80)
           nam->locked = 1;
         else
@@ -736,16 +736,16 @@ void atari_dir(int all, int full, int single) {
           nam->is_sys = 1;
         else
           nam->is_sys = 0;
-        nam->sector = 0;
-        nam->sects = 0;
+        nam->sector     = 0;
+        nam->sects      = 0;
         nam->load_start = -1;
-        nam->load_size = -1;
-        nam->init = -1;
-        nam->run = -1;
-        nam->size = -1;
+        nam->load_size  = -1;
+        nam->init       = -1;
+        nam->run        = -1;
+        nam->size       = -1;
         memcpy(dir, d, ENTRY_SIZE);
         nam->sects = get_info(dir, nam->name);
-        nam->size = nam->sects * SECTOR_SIZE;
+        nam->size  = nam->sects * SECTOR_SIZE;
 
         if ((all || !nam->is_sys))
           names[name_n++] = nam;
@@ -755,7 +755,7 @@ void atari_dir(int all, int full, int single) {
   qsort(names, name_n, sizeof(struct name *), (int (*)(const void *, const void *))comp);
 
   if (full) {
-    int totals = 0;
+    int totals      = 0;
     int total_bytes = 0;
     printf("\n");
     for (x = 0; x != name_n; ++x) {
@@ -799,11 +799,11 @@ void atari_dir(int all, int full, int single) {
 
 int mkfs() {
   unsigned char buf[SECTOR_SIZE];
-  int tracks, x, n;
+  int           tracks, x, n;
   for (x = 0; x != SECTOR_SIZE; ++x)
     buf[x] = 0xe5;
   tracks = dpb->off + (((dpb->dsm + 1) << dpb->bsh) + dpb->spt - 1) / dpb->spt;
-  n = tracks * dpb->spt;
+  n      = tracks * dpb->spt;
   printf("%d tracks\n", tracks);
   printf("%d sectors\n", n);
   for (x = 0; x != n; ++x)
@@ -812,14 +812,14 @@ int mkfs() {
 }
 
 int main(int argc, char *argv[]) {
-  int all = 0;
-  int full = 0;
-  int single = 0;
-  int x;
-  long size;
+  int   all    = 0;
+  int   full   = 0;
+  int   single = 0;
+  int   x;
+  long  size;
   char *disk_name;
   dpb = &dpb_fd;
-  x = 1;
+  x   = 1;
   if (x == argc || !strcmp(argv[x], "--help") || !strcmp(argv[x], "-h")) {
     printf("\nCP/M disk image tool\n");
     printf("\n");

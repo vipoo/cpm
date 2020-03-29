@@ -15,23 +15,23 @@
 #define bits(l, r) (((z80->mem[loc]) >> (r)) & mask[(l) - (r)])
 #define put_cc(cc) put_str(cc_names[cc])
 
-#define OPC_LD "LD    "
-#define OPC_INC "INC   "
-#define OPC_DEC "DEC   "
-#define OPC_ADD "ADD   "
-#define OPC_RET "RET   "
-#define OPC_POP "POP   "
-#define OPC_EXX "EXX   "
-#define OPC_JP "JP    "
-#define OPC_OUT "OUT   "
-#define OPC_IN "IN    "
-#define OPC_EX "EX    "
-#define OPC_DI "DI    "
-#define OPC_EI "EI    "
-#define OPC_CALL "CALL  "
-#define OPC_PUSH "PUSH  "
+#define OPC_LD      "LD    "
+#define OPC_INC     "INC   "
+#define OPC_DEC     "DEC   "
+#define OPC_ADD     "ADD   "
+#define OPC_RET     "RET   "
+#define OPC_POP     "POP   "
+#define OPC_EXX     "EXX   "
+#define OPC_JP      "JP    "
+#define OPC_OUT     "OUT   "
+#define OPC_IN      "IN    "
+#define OPC_EX      "EX    "
+#define OPC_DI      "DI    "
+#define OPC_EI      "EI    "
+#define OPC_CALL    "CALL  "
+#define OPC_PUSH    "PUSH  "
 #define OPC_ILLEGAL "***"
-#define OPC_RST "RST   "
+#define OPC_RST     "RST   "
 
 static int mask[] = {0x001, 0x003, 0x007, 0x00F, 0x01F, 0x03F, 0x07F, 0x0FF};
 
@@ -63,7 +63,7 @@ static char *bit_op_names[] = {
 static char *rep_op_names[] = {"LDI", "CPI", "INI", "OUTI", "LDD", "CPD", "IND", "OUTD", "LDIR", "CPIR", "INIR", "OTIR", "LDDR", "CPDR", "INDR", "OTDR"};
 
 static char *index_reg;
-static int str_length;
+static int   str_length;
 static FILE *fp;
 
 static void put_byte(byte b) {
@@ -144,15 +144,15 @@ int disassemlen(void) { return str_length; }
 
 int disassem(z80info *z80, word start, FILE *file) {
   word loc;
-  int byte_count;
+  int  byte_count;
   byte last_byte;
 
-  loc = start;
+  loc        = start;
   byte_count = 0;
   str_length = 0;
 
   if (file != NULL) {
-    fp = file;
+    fp        = file;
     index_reg = NULL;
   }
 

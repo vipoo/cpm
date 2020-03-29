@@ -2,10 +2,10 @@
 #include "hbios_mocks.h"
 #include <stdlib.h>
 
-#define BF_VDA 0x40
+#define BF_VDA   0x40
 #define BF_VDAIO (BF_VDA + 15)
 
-#define BF_SND 0x50
+#define BF_SND    0x50
 #define BF_SNDINI (BF_SND + 0)
 #define BF_SNDVOL (BF_SND + 1)
 #define BF_SNDPIT (BF_SND + 2)
@@ -13,9 +13,9 @@
 #define BF_SYSGET 0xF8
 #define BF_SYSVER 0xF1
 
-void testMock(z80info *, char *, char *returnRow);
+void    testMock(z80info *, char *, char *returnRow);
 boolean isMatch(z80info *z80, char *row);
-void applyMock(z80info *z80, char *returnRow);
+void    applyMock(z80info *z80, char *returnRow);
 
 void hbiosCall(z80info *z80) {
 
@@ -87,7 +87,7 @@ void hbiosCall(z80info *z80) {
 void testMock(z80info *z80, char *row, char *returnRow) {
 
   char *item = row;
-  int mockB;
+  int   mockB;
 
   while (*item) {
     printf("looking at item %c\r\n", *item);
@@ -105,8 +105,8 @@ void testMock(z80info *z80, char *row, char *returnRow) {
 }
 
 boolean isMatch(z80info *z80, char *row) {
-  int regVal = 0;
-  char *item = row + 2;
+  int   regVal = 0;
+  char *item   = row + 2;
 
   while (*item) {
     regVal = (int)strtol(&item[2], NULL, 16);
@@ -156,8 +156,8 @@ boolean isMatch(z80info *z80, char *row) {
 
 void applyMock(z80info *z80, char *returnRow) {
 
-  int regVal = 0;
-  char *item = returnRow + 2;
+  int   regVal = 0;
+  char *item   = returnRow + 2;
 
   while (*item) {
     regVal = (int)strtol(&item[2], NULL, 16);

@@ -116,10 +116,10 @@ static void initterm(void) {
     rawterm = oldterm;
     rawterm.c_iflag &= ~(ICRNL | IXON | IXOFF | INLCR | ICRNL);
     rawterm.c_lflag &= ~(ICANON | ECHO);
-    rawterm.c_cc[VSUSP] = -1;
-    rawterm.c_cc[VQUIT] = -1;
+    rawterm.c_cc[VSUSP]  = -1;
+    rawterm.c_cc[VQUIT]  = -1;
     rawterm.c_cc[VERASE] = -1;
-    rawterm.c_cc[VKILL] = -1;
+    rawterm.c_cc[VKILL]  = -1;
   }
   /* tcsetattr(fileno(stdin), TCSADRAIN, &rawterm); */
 
@@ -150,10 +150,10 @@ static void initterm(void) {
 
 static void command(z80info *z80) {
   unsigned int i, j, t, e;
-  char str[256], *s;
-  FILE *fp;
-  static word pe = 0;
-  static word po = 0;
+  char         str[256], *s;
+  FILE *       fp;
+  static word  pe = 0;
+  static word  po = 0;
 
   resetterm();
   printf("\n");
@@ -487,7 +487,7 @@ loop: /* "infinite" loop */
 
     if (z80->trace) {
       z80->event = TRUE;
-      z80->halt = TRUE;
+      z80->halt  = TRUE;
     }
 
     return;
@@ -542,8 +542,8 @@ static int gethex(FILE *fp) {
 }
 
 static int loadhex(z80info *z80, FILE *fp) {
-  int start = TRUE;
-  int len, line, i;
+  int  start = TRUE;
+  int  len, line, i;
   word addr, check, t;
 
   for (line = 1; getc(fp) >= 0; line++) /* should be a ':' */
@@ -619,7 +619,7 @@ static int getword(FILE *file) {
 \*-----------------------------------------------------------------------*/
 
 static int loadpisces(z80info *z80, FILE *file) {
-  int numbytes, i;
+  int            numbytes, i;
   unsigned short loadaddr;
 
   /* ignore the 1st 12 words in the file - the 13th word is the starting
@@ -657,9 +657,9 @@ static void suffix(char *str, const char *suff) {
 }
 
 boolean loadfile(z80info *z80, const char *fname) {
-  char buf[200];
+  char  buf[200];
   FILE *fp;
-  int ret;
+  int   ret;
 
   if ((fp = fopen(fname, "r")) != NULL) {
     ret = loadhex(z80, fp);
@@ -791,10 +791,10 @@ void output(z80info *z80, byte haddr, byte laddr, byte data) {
     /* BIOS call - interrupt the z80 before the next instruction
        since we may have to mess with the PC & other stuff -
        otherwise we would do it right here */
-    z80->event = TRUE;
-    z80->halt = TRUE;
+    z80->event   = TRUE;
+    z80->halt    = TRUE;
     z80->syscall = TRUE;
-    z80->biosfn = data;
+    z80->biosfn  = data;
 
     if (z80->trace) {
       printf("BIOS call %d\r\n", z80->biosfn);
@@ -837,7 +837,7 @@ void haltcpu(z80info *z80) {
   if (z80->trace) {
     /* re-enable tracing */
     z80->event = TRUE;
-    z80->halt = TRUE;
+    z80->halt  = TRUE;
     dumptrace(z80);
 
     if (z80->step)
@@ -915,8 +915,8 @@ static void interrupt(int s) {
   /* we tell the z80 to stop when convenient, then reset & continue */
   if (z80 != NULL) {
     z80->event = TRUE;
-    z80->halt = TRUE;
-    z80->sig = s;
+    z80->halt  = TRUE;
+    z80->sig   = s;
   }
 
   signal(s, interrupt);
@@ -927,12 +927,12 @@ static void interrupt(int s) {
 \*-----------------------------------------------------------------------*/
 
 int main(int argc, const char *argv[]) {
-  int x;
-  char cmd[256];
-  int help = 0;
-  FILE *fp2;
-  char *line = NULL;
-  size_t len = 0;
+  int     x;
+  char    cmd[256];
+  int     help = 0;
+  FILE *  fp2;
+  char *  line = NULL;
+  size_t  len  = 0;
   ssize_t read;
 
   cmd[0] = 0;
@@ -950,8 +950,6 @@ int main(int argc, const char *argv[]) {
       } else if (!strcmp(argv[x], "--strace")) {
         strace = 1;
       } else if (!strcmp(argv[x], "--hbios-mocks")) {
-        printf("how do we do this?\r\n");
-
         x++;
         fp2 = fopen(argv[x], "r");
         if (fp2 == NULL) {
