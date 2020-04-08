@@ -65,3 +65,12 @@ difflist:
 format: SHELL:=/bin/bash
 format:
 	@clang-format -i *.c && clang-format -i *.h
+
+ifeq ($(PREFIX),)
+  PREFIX := $(HOME)/.local
+endif
+
+.PHONY: install
+install: cpm cpmtool
+	@install -m 755 cpm $(PREFIX)/bin/
+	@install -m 755 cpmtool $(PREFIX)/bin/
