@@ -1,0 +1,20 @@
+os: linux
+dist: bionic
+language: c
+
+compiler:
+  - gcc
+
+git:
+  submodules: false
+  depth: 3
+
+before_install:
+
+install:
+
+script:
+  - make
+
+notifications:
+  email: false
