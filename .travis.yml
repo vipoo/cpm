@@ -1,20 +1,24 @@
 os: linux
 dist: bionic
 language: c
-
 compiler:
-  - gcc
-
+- gcc
 git:
   submodules: false
   depth: 3
-
 before_install:
-
 install:
-
 script:
-  - make
-
+- make
+before_deploy:
+- tar -czvf cpm-${TRAVIS_TAG}.tar.gz cpm cpmtool
+deploy:
+  provider: releases
+  file: cpm-${TRAVIS_TAG}.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true
+  api-key:
+    secure: m4G9i2rCwKtkgWNzuOd67L7+3YZWmtRzq4YKsIG6h2r8bz0jwYSltmoM3z7TUwz7v7S0TNfvDJRsfyugM2L2+Y9BAGZ/dZGtsnUBGx+magacoxnXAygNbMb3gnPURj1mJhfDT2x43KCxmqx94U3iQOeBee7FdCSrU7UJ0lgvye7uU2QSM57nEkmLMbHYkGW+ShKILbRIRKwocJykDzCr4l3n77sLAU78hC1X4t4o52bClhooTKYiZfbkqNCeazmPVk8MpFd7q+jcE9TqgOu1lpbUoTBUx/MphS25e3dy39RksKcXMtRe07K4U0n9HhntMYaXIk+E/TgmNjglTobS1X4BBPvSSobesN+R0nxr7kv1cIyuuSfY27NijzCBinyr/nuErJmZGneg7ZnYrsLZkI8hsr239qBszPaY8qDrEIWU57ciIr1nRH1LI2K+tiG2/bbYjm+rgxNm8kK4pNuT1bjT25a6wyA08J27qRHAE7HOLTgC5NQXAsxmcnAcRZFpIfy4TKDsEeDVP2UVCaNg9hOURQVzs90t04MtTvy2WcWajnafJUvspdeJaHH7R01LeKsAOYYJjSlLL1jt3ySnul4+aVY/XpwiulLmOt+BjLFYGyGtPlZm6GZ2C0SURCwtTbKyXRrtUOt2G2G3Af/3R5FOsLvzKL35C9NJEWxalaU=
 notifications:
   email: false
