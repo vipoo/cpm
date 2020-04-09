@@ -67,7 +67,7 @@ format:
 	@clang-format -i *.c && clang-format -i *.h
 
 ifeq ($(PREFIX),)
-  PREFIX := $(HOME)/.local
+  PREFIX := /usr/local
 endif
 
 .PHONY: install
