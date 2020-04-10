@@ -1,7 +1,16 @@
 
 # ANSI CP/M Emulator and disk image tool
 
-This emulator allows you to execute CP/M commands on UNIX (Linux or Cygwin). 
+### Details for this fork/branch
+
+This version of the emulator has additonal support for HBIOS from [RomWBW](https://github.com/vipoo/RomWBW),
+to aid in developing tests of cpm/hbios code
+
+> [![Build Status](https://travis-ci.org/vipoo/cpm.svg?branch=dean%2Fhbios)](https://travis-ci.org/vipoo/cpm)
+
+### Upstream readme
+
+This emulator allows you to execute CP/M commands on UNIX (Linux or Cygwin).
 
 If a CP/M command is provided on the command line, it is executed
 immediately.  For example, this will start WordStar:
