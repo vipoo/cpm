@@ -11,7 +11,10 @@ install:
 script:
 - make
 before_deploy:
-- tar -czvf cpm-${TRAVIS_TAG}.tar.gz cpm cpmtool
+- mkdir -p ./bin
+- cp cpm ./bin
+- cp cpmtool ./bin
+- tar -czvf cpm-${TRAVIS_TAG}.tar.gz bin
 deploy:
   provider: releases
   file: cpm-${TRAVIS_TAG}.tar.gz
