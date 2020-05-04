@@ -5,24 +5,19 @@
 #define BF_VDA   0x40
 #define BF_VDAIO (BF_VDA + 15)
 
-#define BF_SND      0x50
-#define BF_SNDRESET (BF_SND + 0)
-#define BF_SNDVOL   (BF_SND + 1)
-#define BF_SNDPIT   (BF_SND + 2)
-#define BF_SNDPLAY  (BF_SND + 3)
-#define BF_SNDQUERY (BF_SND + 4)
-#define BF_SNDDUR   (BF_SND + 5)
+#define BF_SNDQ_STATUS  0
+#define BF_SNDQ_CHCNT	  BF_SNDQ_STATUS + 1	/* RETURN COUNT OF CHANNELS */
+#define BF_SNDQ_VOLUME	BF_SNDQ_STATUS + 2	/* 8 BIT NUMBER */
+#define BF_SNDQ_PERIOD	BF_SNDQ_STATUS + 3	/* 16 BIT NUMBER */
+#define BF_SNDQ_DEV			BF_SNDQ_STATUS + 4	/* RETURN DEVICE TYPE CODE AND IO PORTS - TYPE IN B, PORTS IN DE, HL */
 
-/* BF_SNDQUERY SUBCOMMANDS */
-#define SND_STATUS        0
-#define SND_PENDING       SND_STATUS + 0	/* PENDING COMMANDS BIT 0 -> VOL, BIT 1 PITCH */
-#define SND_SCHAN         SND_STATUS + 1	/* 8 BITS  0 -> LEFT/MONO, 1 -> RIGHT */
-#define SND_STYPE         SND_STATUS + 2	/* 8 BITS - 0 -> TONE, 1 -> NOISE */
-#define SND_SPITCH        SND_STATUS + 3	/* 16 BIT NUMBER */
-#define SND_SVOLUME       SND_STATUS + 4	/* 8 BIT NUMBER */
-#define SND_SDURATION     SND_STATUS + 5	/* 16 BIT NUMBER */
-#define SND_STIMERTARGET  SND_STATUS + 6	/* 16 BIT NUMBER - CURRENT COUNT DOWN TO STOP SOUND */
-#define SND_CHCNT         SND_STATUS + 7	/* RETURN COUNT OF CHANNELS */
+#define BF_SND              0x50
+#define BF_SNDRESET         BF_SND + 0	/* RESET SOUND SYSTEM */
+#define BF_SNDVOL           BF_SND + 1	/* REQUEST SOUND VOL - L CONTAINS VOLUME (255 MAX, 0 SILENT) - SCALED AS REQUIRED BY DRIVER (EG: MAPS TO JUST 4 BIT RESOLUTION FOR SN76489) */
+#define BF_SNDPRD           BF_SND + 2	/* REQUEST SOUND PERIOD - HL CONTAINS DRIVER SPECIFIC VALUE */
+#define BF_SNDNOTE          BF_SND + 3	/* REQUEST NOTE - L CONTAINS NOTE - EACH VALUE IS QUARTER NOTE */
+#define BF_SNDPLAY          BF_SND + 4	/* INITIATE THE REQUESTED SOUND COMMAND */
+#define BF_SNDQUERY         BF_SND + 5	/* E IS SUBFUNCTION */
 
 #define BF_SYSGET 0xF8
 #define BF_SYSVER 0xF1
@@ -48,11 +43,15 @@ void hbiosCall(z80info *z80) {
     break;
 
   case BF_SNDVOL:
-    printf("\r\nHBIOS: BF_SNDVOL, Driver in C %02X, Channel in D: %02X, Volume in L: %02X\r\n", C, D, L);
+    printf("\r\nHBIOS: BF_SNDVOL, Driver in C %02X, Volume in L: %02X\r\n", C, L);
     break;
 
-  case BF_SNDPIT:
-    printf("\r\nHBIOS: BF_SNDPIT, Driver in C %02X, Channel in D: %02X, Pitch in HL: %02X%02X \r\n", C, D, H, L);
+  case BF_SNDPRD:
+    printf("\r\nHBIOS: BF_SNDPRD, Driver in C %02X, Pitch in HL: %02X%02X \r\n", C, H, L);
+    break;
+
+  case BF_SNDNOTE:
+    printf("\r\nHBIOS: BF_SNDNOTE, Driver in C %02X, Note in HL: %02X%02X\r\n", C, H, L);
     break;
 
   case BF_SNDPLAY:
@@ -60,11 +59,7 @@ void hbiosCall(z80info *z80) {
     break;
 
   case BF_SNDQUERY:
-    printf("\r\nHBIOS: BF_SNDQUERY, Driver in C %02X, Channel in D: %02X, SubCommand: %02X\r\n", C, D, E);
-    break;
-
-  case BF_SNDDUR:
-    printf("\r\nHBIOS: BF_SNDDUR, Driver in C %02X, Channel in D: %02X, Duration in HL: %02X%02X\r\n", C, D, H, L);
+    printf("\r\nHBIOS: BF_SNDQUERY, Driver in C %02X, SubCommand: %02X\r\n", C, E);
     break;
 
   case BF_SYSGET: {
