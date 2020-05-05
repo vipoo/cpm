@@ -20,6 +20,7 @@
 #define BF_SNDQUERY         BF_SND + 5	/* E IS SUBFUNCTION */
 
 #define BF_SYSGET 0xF8
+#define BF_SYSSET 0xF9
 #define BF_SYSVER 0xF1
 
 void    testMock(z80info *, char *, char *returnRow);
@@ -64,13 +65,12 @@ void hbiosCall(z80info *z80) {
 
   case BF_SYSGET: {
     printf("\r\nHBIOS: BF_SYSGET, Subfunction: in C %02X\r\n", C);
-/*    switch (C) {
-    case BF_SND:
-      E = 1;
-      A = 0;
-      break;
-    }
-  */  break;
+    break;
+  }
+
+  case BF_SYSSET: {
+    printf("\r\nHBIOS: BF_SYSSET, Subfunction: in C %02X, DE:HL: %02X%02X:%02X%02X\r\n", C, D, E, H, L);
+    break;
   }
 
   case BF_SYSVER:
@@ -82,7 +82,7 @@ void hbiosCall(z80info *z80) {
     break;
 
   default:
-    printf("\r\nHBIOS: %0X", B);
+    printf("\r\nHBIOS: B: %0X, C: %0X, D: %0X, E: %0X, H: %0X, L: %0X", B, C, D, E, H, L);
   }
 
   if (activeCommandCount) {
@@ -125,7 +125,7 @@ boolean isMatch(z80info *z80, char *row) {
   while (*item) {
     regVal = (int)strtol(&item[2], NULL, 16);
 
-    printf("Testing %c. %02X\r\n", *item, regVal);
+    /*printf("Testing %c. %02X\r\n", *item, regVal);*/
 
     switch (*item) {
     case 'A':
@@ -167,7 +167,7 @@ boolean isMatch(z80info *z80, char *row) {
     item += 5;
   }
 
-  printf("Matched.\r\n");
+  /*printf("Matched.\r\n");*/
 
   return TRUE;
 }
@@ -177,7 +177,7 @@ void applyMock(z80info *z80, char *returnRow) {
   int   regVal = 0;
   char *item   = returnRow + 2;
 
-  printf("Applying mock.\r\n");
+  /*printf("Applying mock.\r\n");*/
 
   while (*item) {
     regVal = (int)strtol(&item[2], NULL, 16);
