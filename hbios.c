@@ -1,6 +1,16 @@
 #include "defs.h"
 #include "hbios_mocks.h"
 #include <stdlib.h>
+#include <time.h>
+
+#define BF_CIO		  0x00
+#define BF_CIOIN		BF_CIO + 0	/* CHARACTER INPUT */
+#define BF_CIOOUT   BF_CIO + 1	/* CHARACTER OUTPUT */
+
+#define BF_SYS	    0xF0
+#define BF_SYSGET	  BF_SYS + 8	/* ; GET HBIOS INFO */
+
+#define BF_SYSGET_TIMER		0xD0	/* GET CURRENT TIMER VALUE */
 
 #define BF_VDA   0x40
 #define BF_VDAIO (BF_VDA + 15)
@@ -19,17 +29,56 @@
 #define BF_SNDPLAY          BF_SND + 4	/* INITIATE THE REQUESTED SOUND COMMAND */
 #define BF_SNDQUERY         BF_SND + 5	/* E IS SUBFUNCTION */
 
-#define BF_SYSGET 0xF8
 #define BF_SYSSET 0xF9
 #define BF_SYSVER 0xF1
 
+
+struct registers {
+  int a;
+  int b;
+  int c;
+  int d;
+  int e;
+  int h;
+  int l;
+};
+
 void    testMock(z80info *, char *, char *returnRow);
-boolean isMatch(z80info *z80, char *row);
+boolean isMatch(struct registers *, char *row);
 void    applyMock(z80info *z80, char *returnRow);
+
+long current_time_at_50hz(void) {
+  long            ms;
+  long  s;
+  struct timespec spec;
+
+  clock_gettime(CLOCK_REALTIME, &spec);
+
+  ms = spec.tv_nsec / 10000;
+
+  s  = spec.tv_sec - 1588911417;
+  ms = spec.tv_nsec / 1.0e6;
+  if (ms > 999) {
+      s++;
+      ms = 0;
+  }
+
+  return ((s * 1000 + ms)) * 50 / 1000;
+}
+
 
 void hbiosCall(z80info *z80) {
 
   int i = 0;
+  long ticks;
+
+  struct registers r;
+  r.b = B;
+  r.c = C;
+  r.d = D;
+  r.e = E;
+  r.h = H;
+  r.l = L;
 
   switch (B) {
   case BF_VDAIO:
@@ -37,6 +86,10 @@ void hbiosCall(z80info *z80) {
     /* Hard coded for the one HBIOS call */
     D = 0xBE;
     A = 0;
+    break;
+
+  case BF_CIOOUT:
+    printf("%c", E);
     break;
 
   case BF_SNDRESET:
@@ -64,7 +117,24 @@ void hbiosCall(z80info *z80) {
     break;
 
   case BF_SYSGET: {
-    printf("\r\nHBIOS: BF_SYSGET, Subfunction: in C %02X\r\n", C);
+    switch(C) {
+    case BF_SYSGET_TIMER:
+      ticks = current_time_at_50hz();
+
+      A = 0;
+      D = (ticks >> 24) & 0xFF;
+      E = (ticks >> 16) & 0xFF;
+      H = (ticks >> 8) & 0xFF;
+      L = ticks & 0xFF;
+
+      C = 50;
+      B = 0;
+      break;
+
+    default:
+      printf("\r\nHBIOS: BF_SYSGET, Subfunction: in C %02X\r\n", C);
+    }
+
     break;
   }
 
@@ -82,92 +152,65 @@ void hbiosCall(z80info *z80) {
     break;
 
   default:
-    printf("\r\nHBIOS: B: %0X, C: %0X, D: %0X, E: %0X, H: %0X, L: %0X", B, C, D, E, H, L);
+    printf("\r\nHBIOS: B: %0X, C: %0X, D: %0X, E: %0X, H: %0X, L: %0X\r\n", B, C, D, E, H, L);
   }
 
   if (activeCommandCount) {
     for (i = 0; i < activeCommandCount; i++) {
-      /*printf("> %s", strs[i][0]);*/
-
       if (strs[i][0][0] == '>') {
-        /*printf("Matching >");*/
-        if (isMatch(z80, strs[i][0]))
+        if (isMatch(&r, strs[i][0]))
           applyMock(z80, strs[i][1]);
       }
     }
   }
 }
 
-void testMock(z80info *z80, char *row, char *returnRow) {
-
-  char *item = row;
-  int   mockB;
-
-  while (*item) {
-    printf("looking at item %c\r\n", *item);
-    if (*item == 'B') {
-      mockB = (int)strtol(&item[2], NULL, 16);
-      if (mockB == B) {
-        printf("Mocking .....\r\n");
-        *row = '-';
-        applyMock(z80, returnRow);
-        break;
-      }
-    }
-    item++;
-  }
-}
-
-boolean isMatch(z80info *z80, char *row) {
+boolean isMatch(struct registers *r, char *row) {
   int   regVal = 0;
   char *item   = row + 2;
 
   while (*item) {
     regVal = (int)strtol(&item[2], NULL, 16);
 
-    /*printf("Testing %c. %02X\r\n", *item, regVal);*/
-
     switch (*item) {
     case 'A':
-      if (A != regVal)
+      if (r->a != regVal)
         return FALSE;
       break;
 
     case 'B':
-      if (B != regVal)
+      if (r->b != regVal)
         return FALSE;
       break;
 
     case 'C':
-      if (C != regVal)
+      if (r->c != regVal)
         return FALSE;
       break;
 
     case 'D':
-      if (D != regVal)
+      if (r->d != regVal)
         return FALSE;
       break;
 
     case 'E':
-      if (E != regVal)
+      if (r->e != regVal)
         return FALSE;
       break;
 
     case 'H':
-      if (H != regVal)
+      if (r->h != regVal)
         return FALSE;
       break;
 
     case 'L':
-      if (L != regVal)
+      if (r->l != regVal)
         return FALSE;
       break;
     }
 
     item += 5;
   }
-
-  /*printf("Matched.\r\n");*/
 
   return TRUE;
 }
@@ -177,13 +220,8 @@ void applyMock(z80info *z80, char *returnRow) {
   int   regVal = 0;
   char *item   = returnRow + 2;
 
-  /*printf("Applying mock.\r\n");*/
-
   while (*item) {
     regVal = (int)strtol(&item[2], NULL, 16);
-
-    printf("Setting %c to %02X\r\n", *item, regVal);
-
 
     switch (*item) {
     case 'A':
