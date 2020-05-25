@@ -883,6 +883,7 @@ void check_BDOS_hook(z80info *z80) {
     goto readseq;
   }
   case 34: /* write random record */
+  case 40:
   {
     long ofst;
     fp = getfp(z80, DE);
