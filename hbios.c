@@ -2,10 +2,32 @@
 #include "hbios_mocks.h"
 #include <stdlib.h>
 #include <time.h>
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <stdio.h>
+#include <sys/select.h>
+#include <stropts.h>
+
+int kbhit()
+{
+    struct termios term;
+    struct termios term2;
+    int byteswaiting;
+    tcgetattr(0, &term);
+
+    term2 = term;
+    term2.c_lflag &= ~ICANON;
+    tcsetattr(0, TCSANOW, &term2);
+    ioctl(0, FIONREAD, &byteswaiting);
+    tcsetattr(0, TCSANOW, &term);
+
+    return byteswaiting > 0;
+}
 
 #define BF_CIO		  0x00
 #define BF_CIOIN		BF_CIO + 0	/* CHARACTER INPUT */
 #define BF_CIOOUT   BF_CIO + 1	/* CHARACTER OUTPUT */
+#define BF_CIOIST   BF_CIO + 2  /* CHARACTER INPUT STATUS */
 
 #define BF_SYS	    0xF0
 #define BF_SYSGET	  BF_SYS + 8	/* ; GET HBIOS INFO */
@@ -86,6 +108,15 @@ void hbiosCall(z80info *z80) {
     /* Hard coded for the one HBIOS call */
     D = 0xBE;
     A = 0;
+    break;
+
+  case BF_CIOIN:
+    E = getchar();
+    A = 0;
+    break;
+
+  case BF_CIOIST:
+    A = kbhit();
     break;
 
   case BF_CIOOUT:
