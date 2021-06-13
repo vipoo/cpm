@@ -1377,6 +1377,31 @@ ireginstr:
 		goto iregbitinstr;
 		break;
 
+	/* undocumented instructions */
+
+	case 0x5C:					/* LD   E,IYH */
+		*REG[3] = ((unsigned char*)rr)[1];
+		break;
+
+	case 0x5D:					/* LD   E,IYL */
+		*REG[3] = ((unsigned char*)rr)[0];
+		break;
+
+	case 0x6F:					/* LD   IYL,A */
+		((unsigned char*)rr)[0] = *REG[7];
+		break;
+
+	case 0x67:					/* LD   IYH,A */
+		((unsigned char*)rr)[1] = *REG[7];
+		break;
+
+	case 0x7C:					/* LD   A,IYH */
+		*REG[7] = ((unsigned char*)rr)[1];
+		break;
+
+	case 0x7D:					/* LD   A,IYL */
+		*REG[7] = ((unsigned char*)rr)[0];
+		break;
 
 	/* 8-bit load group */
 
