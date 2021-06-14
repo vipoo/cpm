@@ -957,7 +957,7 @@ contsw:
 		break;
 
 
-	default: 
+	default:
 		undefinstr(z80, t);
 		break;
 	}					/* end of main "switch" */
@@ -1353,7 +1353,7 @@ bitinstr:
 		SETMEM(HL, t1);
 		break;
 
-	default: 
+	default:
 		undefinstr(z80, t);
 		break;
 	}	/* end of "bitinstr" "switch" */
@@ -1378,6 +1378,15 @@ ireginstr:
 		break;
 
 	/* undocumented instructions */
+
+
+	case 0x4D:					/* LD   C,IYL*/
+		*REG[1] = ((unsigned char*)rr)[0];
+		break;
+
+	case 0x55:					/* LD   D,IYL */
+		*REG[2] = ((unsigned char*)rr)[0];
+		break;
 
 	case 0x5C:					/* LD   E,IYH */
 		*REG[3] = ((unsigned char*)rr)[1];
@@ -1583,7 +1592,7 @@ ireginstr:
 
 
 	/* extended instructions */
-extinstr: 
+extinstr:
 	t = MEM(PC);
 	PC++;
 	switch (t)
@@ -1968,7 +1977,7 @@ iregbitinstr:
 		break;
 
 
-	default: 
+	default:
 		undefinstr(z80, t);
 		break;
 	}	/* end of "iregbitinstr" "switch" */
